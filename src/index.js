@@ -52,7 +52,7 @@ class FtpServer extends EventEmitter {
       socket.once('close', () => {
         this.emit('disconnect', {connection, id: connection.id, newConnectionCount: Object.keys(this.connections).length});
       })
-      
+
       this.emit('connect', {connection, id: connection.id, newConnectionCount: Object.keys(this.connections).length});
 
       const greeting = this._greeting || [];
@@ -67,7 +67,7 @@ class FtpServer extends EventEmitter {
       this.log.error(err, '[Event] error');
       this.emit('server-error', {error: err});
     });
-    
+
     const quit = _.debounce(this.quit.bind(this), 100);
 
     process.on('SIGTERM', quit);
@@ -89,11 +89,12 @@ class FtpServer extends EventEmitter {
       this.server.listen(this.url.port, this.url.hostname, (err) => {
         this.server.removeListener('error', reject);
         if (err) return reject(err);
-        this.log.info({
+        this.log.debug({
           protocol: this.url.protocol.replace(/\W/g, ''),
           ip: this.url.hostname,
           port: this.url.port
         }, 'Listening');
+        this.log.info(`FTP server listening for connections on ${this.url.hostname}:${this.url.port}`)
         resolve('Listening');
       });
     });
@@ -138,7 +139,7 @@ class FtpServer extends EventEmitter {
       } catch (err) {
         this.log.error(err, 'Error closing connection', {id});
       }
-      
+
       resolve('Disconnected');
     });
   }
@@ -151,12 +152,12 @@ class FtpServer extends EventEmitter {
   close() {
     this.server.maxConnections = 0;
     this.emit('closing');
-    this.log.info('Closing connections:', Object.keys(this.connections).length);
+    this.log.debug('Closing connections:', Object.keys(this.connections).length);
 
     return Promise.all(Object.keys(this.connections).map((id) => this.disconnectClient(id)))
     .then(() => new Promise((resolve) => {
       this.server.close((err) => {
-        this.log.info('Server closing...');
+        this.log.debug('Server closing...');
         if (err) this.log.error(err, 'Error closing server');
         resolve('Closed');
       });
