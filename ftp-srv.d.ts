@@ -2,11 +2,18 @@ import * as tls from 'tls'
 import { Stats } from 'fs'
 import { EventEmitter } from 'events';
 
+export type FileStat= {
+    isDirectory(): boolean
+    mode: number
+    size: number
+    mtime: number
+    name: string
+} 
 export class FileSystem {
 
 	readonly connection: FtpConnection;
 	readonly root: string;
-	readonly cwd: string;
+	cwd: string;
 
     constructor(connection: FtpConnection, {root, cwd}?: {
         root: any;
@@ -15,9 +22,9 @@ export class FileSystem {
 
     currentDirectory(): string;
 
-    get(fileName: string): Promise<any>;
+    get(fileName: string): Promise<FileStat>;
 
-    list(path?: string): Promise<any>;
+    list(path?: string): Promise<FileStat[]>;
 
     chdir(path?: string): Promise<string>;
 
@@ -28,7 +35,7 @@ export class FileSystem {
 
     read(fileName: string, {start}?: {
         start?: any;
-    }): Promise<any>;
+    }): Promise<ReadableStream>;
 
     delete(path: string): Promise<any>;
 
